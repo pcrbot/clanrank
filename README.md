@@ -2,11 +2,17 @@
  适用于hoshinoBotV1的插件, 可以在QQ群中查询工会战排名. 
 
 最后更新时间：2020年7月3日下午15时
+
 数据均来自Github@Kengxxiao
+
 项目地址 https://github.com/Kengxxiao/Kyouka
+
 网页在线查询 https://kengxxiao.github.io/Kyouka/
+
 本插件以HoshinoV1为基础编写, 使用HoshinoV2应当对服务层进行修改. 
+
 请限制使用频率, 为了不给原作者服务器增加太大负担. 
+
 ## 指令示例
 * 会长排名卢本伟, 查询会长名字包含卢本伟的公会的排名
 * 公会排名卢本伟, 查询公会名字包含卢本伟的公会的排名
