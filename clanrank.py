@@ -1,7 +1,6 @@
-import requests,json
+import requests,json,time
 from hoshino import util,Service
 from hoshino.util import FreqLimiter
-
 sv = Service("clanrank",enable_on_default=True,visible = False)
 
 url_first = "https://service-kjcbcnmw-1254119946.gz.apigw.tencentcs.com/"
@@ -23,24 +22,21 @@ def get_rank(info,info_type):
     if info_type == "name":
         url += '-1'
         content = json.dumps({"history":"0","clanName": info})
-        r = requests.post(url, data=content, headers=headers)
     elif info_type == "leader":
         url += '-1'
         content = json.dumps({"history":"0","leaderName": info})
-        r = requests.post(url, data=content, headers=headers)
     elif info_type == "score":
         # 无需额外请求头
         url += info
         content = json.dumps({"history":"0"})
-        r = requests.post(url, data=content, headers=headers)
     elif info_type == "rank":
         url += info
         content = json.dumps({"history":"0"})
-        r = requests.post(url, data=content, headers=headers)
     else :
         # 这都能填错?爪巴!
         msg = f"查询失败,内部错误,请联系维护人员"
         return msg
+    r = requests.post(url, data=content, headers=headers)
     r_dec = json.loads(r.text)
     if r_dec['code'] != 0:
         # Bad request
@@ -50,8 +46,11 @@ def get_rank(info,info_type):
     msg = ">>>公会战排名查询\n"
     # 查询不到结果
     result = len(r_dec['data'])
+    queryTime = time.localtime(r_dec['ts'])
+    formatTime = time.strftime('%Y-%m-%d %H:%M', queryTime)
+    msg += f'数据更新时间{formatTime}\n'
     if result == 0:
-        msg += "没有查询结果,当前仅能查询前25010名公会,排名信息30分钟更新一次,相比于游戏内更新有10分钟延迟"
+        msg += "没有查询结果,当前仅能查询前25010名公会,排名信息30分钟更新一次,相比于游戏内数据有10分钟延迟"
         return msg
     for i in range(result):
         clanname = r_dec['data'][i]['clan_name']
