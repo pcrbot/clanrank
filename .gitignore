@@ -1,0 +1,15 @@
+# 打包文件
+*.zip
+*.7z
+*.rar
+# 文本
+*.txt
+# 本机测试文件
+clanrank_test.py
+# 配置文件(V1)
+config.json
+clanrank.json
+cache.json
+rank_push.json
+# vscode
+.vscode/
