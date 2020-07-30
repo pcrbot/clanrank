@@ -1,7 +1,7 @@
 # clanrank
  适用于hoshinoBotV1的插件, 可以在QQ群中查询工会战排名. 
 
-最后更新时间：2020年7月3日下午15时
+最后更新时间：2020年7月30日上午9时
 
 数据均来自Github@Kengxxiao
 
@@ -9,7 +9,7 @@
 
 网页在线查询 https://kengxxiao.github.io/Kyouka/
 
-本插件以HoshinoV1为基础编写, 使用HoshinoV2应当对服务层进行修改. 
+本插件以HoshinoV1为基础编写, 使用HoshinoV2请切换至master分支
 
 请限制使用频率, 为了不给原作者服务器增加太大负担. 
 
@@ -23,19 +23,21 @@
 1. 将文件`clanrank.py`放到Hoshino/hoshino/modules之下的一个目录内即可, 请放到已开启的模块中, 在Hoshino目录下的`config.py`中可以查看已开启的模块. 
 2. 创建新目录, 作为一个单独的模块来控制. 切换到Hoshino的模组目录, 然后直接使用git clone:
     ```
-    cd ~Hoshino/hoshino/modules/
-    git clone https://github.com/VikingXie1999/clanrank.git
+    cd ~/HoshinoBot/hoshino/modules/
+    git clone https://github.com/var-mixer/clanrank.git
     ```
     当选择创建新目录时, 同时应当在config.py中启用该模块. 操作方法为编辑Hoshino下的`config.py`文件：
     ```
     nano ~/Hoshino/config.py
     ```
     在`MODULES_ON`中仿照格式添加项`'clanrank'`. 
-3. 如果发生400错误, 可能是更新了POST请求头, 请更新, 在切换到对应目录后使用：
-    ```
-    git pull origin master
-    ```
+3. 如果发生400/411错误, 可能是更新了POST请求头, 请更新
 ## 更新日志：
+### v0.0.6
+更新时间：2020/7/30 上午9：08
+* HoshinoV1版本签出至V2分支，主分支适配V2
+* 修正请求头
+
 ### v0.0.4
 更新时间：2020/7/3 下午11:04
 * 查询结果最后会显示数据更新时间

@@ -17,7 +17,7 @@ def get_rank(info,info_type):
     """
     url = url_first + info_type
     url += '/'
-    headers = {"Content-Type": "application/json","Referer": "https://kengxxiao.github.io/Kyouka/"}
+    headers = {"Custom-Source":"did","Content-Type": "application/json","Referer": "https://kengxxiao.github.io/Kyouka/"}
     
     if info_type == "name":
         url += '-1'
