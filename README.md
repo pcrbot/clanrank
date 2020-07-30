@@ -38,7 +38,7 @@
     cd ~/HoshinoBot/hoshino/modules/
     git clone https://github.com/var-mixer/clanrank.git
     ```
-    修改配置文件：在config.py中启用该模块. 操作方法为编辑Hoshino下的`__bot__.py`文件：
+    修改配置文件：在config中启用该模块. 操作方法为编辑Hoshino下的`__bot__.py`文件：
     ```
     nano ~/Hoshino/hoshino/config/__bot__.py
     ```
