@@ -1,9 +1,10 @@
 import requests,json,time,os
-from hoshino import util,Service
+from hoshino import Service
 from hoshino.util import FreqLimiter
 import nonebot,hoshino
-from hoshino.typing import CQEvent,CommandSession
+from hoshino.typing import CQEvent
 from aiocqhttp.exceptions import Error as CQHttpError
+from . import boss
 sv_query = Service("clanrank-query",enable_on_default=True,visible = False,help_='''
 【公会排名XXX】查询公会名包含XXX的公会
 【会长排名XXX】查询会长名字包含XXX的公会
@@ -107,6 +108,7 @@ def process(dec,conciseMode = False):
             msg_new = f"第{i+1}条:\n公会名：{clanname}\n排名：{rank}\n"
         else:
             msg_new = f"第{i+1}条信息:\n公会名称：{clanname}\n会长：{leader}\n成员数量：{num}\n目前排名：{rank}\n造成伤害：{damage}\n"
+            msg_new += f'进度：{boss.calc_hp(damage)}'
         msg += msg_new
     return msg
 
@@ -158,7 +160,7 @@ async def clanrankQuery(bot, ev:CQEvent):
         await bot.send(ev, msg)
         code = set_clanname(int(group_id),config[str(group_id)]["leaderId"])
         if code != 0:
-            msg = f'发生错误{code}，可能的原因：公会更换了会长/工会排名不在前2W名。\n如果非上述原因，请联系维护并提供此信息'
+            msg = f'发生错误{code}，可能的原因：公会更换了会长/工会排名不在前2W名。\n如果非上述原因，请联系维护并提供此信息。'
             await bot.send(ev, msg)
             return
         else:
@@ -184,7 +186,7 @@ async def set_clan(bot,ev:CQEvent):
         return
     code = set_clanname(int(group_id),int(leader_id))
     if code != 0:
-        msg = f'发生错误{code}，可能的原因：网络错误/ID输入错误/工会排名不在前2W名。\n如果非上述原因，请联系维护并提供此信息'
+        msg = f'发生错误{code}，可能的原因：网络错误/ID输入错误/工会排名不在前2W名。\n如果非上述原因，请联系维护并提供此信息。'
         await bot.send(ev, msg, at_sender=True)
         return
     msg = f"绑定成功\n"
