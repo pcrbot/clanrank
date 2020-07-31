@@ -1,7 +1,7 @@
 # clanrank
  适用于hoshinoBotV2的插件, 可以在QQ群中查询工会战排名. 
 
-最后更新时间：2020年7月30日下午23时
+最后更新时间：2020年7月30日下午16时
 
 数据均来自Github@Kengxxiao
 
@@ -36,18 +36,34 @@
 2. 创建新目录, 作为一个单独的模块来控制. 切换到Hoshino的模组目录, 然后clone本项目:
     ```
     cd ~/HoshinoBot/hoshino/modules/
-    git clone https://github.com/var-mixer/clanrank.git
+    git clone https://github.com/pcr/clanrank.git
     ```
-    修改配置文件：在config中启用该模块. 操作方法为编辑Hoshino下的`config.py`文件：
+    修改配置文件：在config中启用该模块. 操作方法为编辑Hoshino下的`__bot__.py`文件：
     ```
-    nano ~/Hoshino/config.py
+    nano ~/Hoshino/hoshino/config/__bot__.py
     ```
     在`MODULES_ON`中仿照格式添加项`'clanrank'`. 
-
+3. HoshinoBot v1版本请直接克隆`v1`分支：
+   ```
+   git clone -b v1 https://github.com/pcr/clanrank.git
+   ```
+4. 更新请切换到对应目录后，使用git更新：
+   ```
+   git pull
+   ```
+   如果要更换分支：
+   ```
+   git checkout -b 本地分支名 origin/v1
+   ```
 ## 更新日志：
+### v0.1.1
+更新时间： 2020/7/31 上午8：23
+* 新增BOSS进度条，来自群艾琳佬
+* 修正v1版本导入了不存在的`hoshino.typing`的问题，同时删除了v2版多余的导入
+* 更换示例的地址为pcrbot组织下的永久地址
 
 ### v0.1.0
-更新时间： 2020/7/30 下午23：00
+更新时间： 2020/7/30 下午16：00
 * 新增fav接口，以会长ID查询
 * 新增绑定公会信息，以及每日推送公会排名
 * 新增缓存机制，减少对源站的访问次数

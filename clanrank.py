@@ -1,9 +1,9 @@
 import requests,json,time,os
-from hoshino import util,Service
+from hoshino import Service
 from hoshino.util import FreqLimiter
 import nonebot,hoshino
-from hoshino.typing import CQEvent,CommandSession
 from aiocqhttp.exceptions import Error as CQHttpError
+from . import boss
 # 自行添加帮助菜单
 sv_query = Service("clanrank-query",enable_on_default=True,visible = False)
 
@@ -102,6 +102,7 @@ def process(dec,conciseMode = False):
             msg_new = f"第{i+1}条:\n公会名：{clanname}\n排名：{rank}\n"
         else:
             msg_new = f"第{i+1}条信息:\n公会名称：{clanname}\n会长：{leader}\n成员数量：{num}\n目前排名：{rank}\n造成伤害：{damage}"
+            msg_new += f'进度：{boss.calc_hp(damage)}'
         msg += msg_new
     return msg
 
