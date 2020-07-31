@@ -1,8 +1,6 @@
 # clanrank
  适用于hoshinoBotV2的插件, 可以在QQ群中查询工会战排名. 
 
-最后更新时间：2020年7月30日下午16时
-
 数据均来自Github@Kengxxiao
 
 项目地址 https://github.com/Kengxxiao/Kyouka
