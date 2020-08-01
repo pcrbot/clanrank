@@ -23,3 +23,12 @@ daily_push_list = [
 leader_id_query_list = [
     'full','clan_name','member_num','leader_name','leader_viewer_id','rank','index','boss'
 ]
+# 本公会查询
+self_lan_query_list = [
+    'clan_name','leader_name','ts','rank','damage','boss'
+]
+
+# 分数线模板
+line_list = [
+    'rank','damage','boss'
+]
