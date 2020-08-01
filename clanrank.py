@@ -109,7 +109,7 @@ def process(dec, infoList:list):
         return msg
     result = len(dec['data'])
     if result == 0:
-        msg += "没有查询结果,仅能查询前20000名公会,排名信息30分钟更新一次,相比于游戏内更新有10分钟左右延迟\n"
+        msg = "没有查询结果,仅能查询前20000名公会,排名信息30分钟更新一次,相比于游戏内更新有10分钟左右延迟\n"
         return msg
 
     # 预处理列表信息中的部分
