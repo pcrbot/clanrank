@@ -201,14 +201,17 @@ async def clanrank_push_cn():
             origin_info = get_rank(config[g_id]["leaderId"],"fav")
         except:
             # 网络错误
-            msg += "查询本日5时公会战信息时发生错误。"
+            msg += "查询本日5时公会战信息时发生网络错误"
         result = len(origin_info['data'])
         if origin_info['code'] != 0:
             # Bad request
-            msg += "查询本日5时公会战信息时发生错误。"
+            msg += f"查询本日5时公会战信息时发生错误{origin_info['code']}"
         elif result == 0:
             # 没有信息
-            msg += "没有查询到本日5时的公会战排名信息。"
+            msg += "没有查询到本日5时的公会战排名信息，可能已掉出前2W名"
+        elif time.time() - origin_info['ts'] >= 45*60:
+            # 获得的数据是超过45分钟以前的，说明网站不再更新，公会战结束
+            return
         else:
             clanname = origin_info['data'][0]['clan_name']
             rank = origin_info['data'][0]['rank']
