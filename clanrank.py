@@ -81,7 +81,7 @@ def process(dec,conciseMode = False):
         return msg
     result = len(dec['data'])
     if result == 0:
-        msg += "没有查询结果,当前仅能查询前20000名公会,排名信息30分钟更新一次,相比于游戏内更新有10分钟左右延迟"
+        msg = "没有查询结果,当前仅能查询前20000名公会,排名信息30分钟更新一次,相比于游戏内更新有10分钟左右延迟"
         return msg
     msg = ">>>公会战排名查询\n"
 
