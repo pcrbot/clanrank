@@ -43,7 +43,7 @@
     在`MODULES_ON`中仿照格式添加项`'clanrank'`. 
 3. HoshinoBot v1版本请直接克隆`v1`分支：
    ```
-   git clone -b v1 https://github.com/pcr/clanrank.git
+   git clone -b v1 https://github.com/pcrbot/clanrank.git
    ```
 4. 更新请切换到对应目录后，使用git更新：
    ```
