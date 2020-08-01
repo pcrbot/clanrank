@@ -79,7 +79,11 @@ def get_rank(info,info_type):
     else:
         # 这都能填错?爪巴!
         return -1
-    r = requests.post(url, data=content, headers=headers)
+    try:
+        r = requests.post(url, data=content, headers=headers,timeout=3)
+    except:
+        # timeout
+        return 408
     r_dec = json.loads(r.text)
     return r_dec
 
@@ -145,11 +149,9 @@ def set_clanname(group_id,leader_id):
     """
     为一个群绑定公会信息, 由于公会是以会长ID为唯一标志的, 因此传入参数只有群号, 会长ID, 请确保公会是前2W名
     """
-    try:
-        origin_info = get_rank(leader_id,"fav")
-    except:
-        # 网络错误
-        return 1
+    origin_info = get_rank(leader_id,"fav")
+    if type(origin_info) == int:
+        return origin_info
     if origin_info['code'] != 0:
         # Bad request
         return origin_info['code']
@@ -233,10 +235,9 @@ async def clanrank_push_cn():
     config = loadConfig()
     for g_id in config:
         msg = ''
-        try:
-            origin_info = get_rank(config[g_id]["leaderId"],"fav")
-        except:
-            msg += "查询本日5时公会战信息时发生网络错误"
+        origin_info = get_rank(config[g_id]["leaderId"],"fav")
+        if type(origin_info) == int:
+            msg += f"查询本日5时公会战信息时发生网络错误{origin_info},请联系维护"
         result = len(origin_info['data'])
         if origin_info['code'] != 0:
             # Bad request
@@ -269,11 +270,14 @@ async def rank_query_by_name(bot, ev: CQEvent):
     if not _lmt.check(uid):
         await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
         return
-    _lmt.start_cd(uid)
     clan_name = ev.message.extract_plain_text()
     info = get_rank(clan_name, "name")
-    msg = process(info,leader_id_query_list)
-    msg += f"查询有{_time_limit}秒冷却"
+    if type(info) == int:
+        msg = f'查询出现错误{info}，请联系维护者'
+    else:
+        msg = process(info,leader_id_query_list)
+        msg += f"查询有{_time_limit}秒冷却"
+        _lmt.start_cd(uid)
     await bot.send(ev, msg)
 
 
@@ -286,11 +290,14 @@ async def rank_query_by_leader(bot, ev: CQEvent):
     if not _lmt.check(uid):
         await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
         return
-    _lmt.start_cd(uid)
     leader_name = ev.message.extract_plain_text()
     info = get_rank(leader_name, "leader")
-    msg = process(info,leader_id_query_list)
-    msg += f"查询有{_time_limit}秒冷却"
+    if type(info) == int:
+        msg = f'查询出现错误{info}，请联系维护者'
+    else:
+        msg = process(info,leader_id_query_list)
+        msg += f"查询有{_time_limit}秒冷却"
+        _lmt.start_cd(uid)
     await bot.send(ev, msg)
 
 
@@ -303,14 +310,17 @@ async def rank_query_by_rank(bot, ev: CQEvent):
     if not _lmt.check(uid):
         await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
         return
-    _lmt.start_cd(uid)
     rank = ev.message.extract_plain_text()
     if not rank.isdigit():
         await bot.send(ev, '请正确输入数字', at_sender=True)
         return
     info = get_rank(rank, "rank")
-    msg = process(info,leader_id_query_list)
-    msg += f"查询有{_time_limit}秒冷却"
+    if type(info) == int:
+        msg = f'查询出现错误{info}，请联系维护者'
+    else:
+        msg = process(info,leader_id_query_list)
+        msg += f"查询有{_time_limit}秒冷却"
+        _lmt.start_cd(uid)
     await bot.send(ev, msg)
 
 @sv_query.on_fullmatch('分数线')
@@ -322,8 +332,11 @@ async def damage_line(bot, ev: CQEvent):
     if not _lmt.check(uid):
         await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
         return
-    _lmt.start_cd(uid)
     info = get_rank("nothing", "line")
-    msg = process(info,line_list)
-    msg += f"查询有{_time_limit}秒冷却"
+    if type(info) == int:
+        msg = f'查询出现错误{info}，请联系维护者'
+    else:
+        msg = process(info,line_list)
+        msg += f"查询有{_time_limit}秒冷却"
+        _lmt.start_cd(uid)
     await bot.send(ev, msg)
