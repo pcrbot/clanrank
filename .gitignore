@@ -13,3 +13,5 @@ cache.json
 rank_push.json
 # vscode
 .vscode/
+# python
+__pycache__/
