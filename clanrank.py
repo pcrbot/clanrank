@@ -197,7 +197,7 @@ async def clanrankQuery(bot, ev:CQEvent):
         else:
             config = loadConfig() # 信息已经被缓存, 重新读取
     last_query_info = config[str(group_id)]["lastQuery"]
-    msg = process(last_query_info,self_lan_query_list)
+    msg = process(last_query_info,self_clan_query_list)
     await bot.send(ev, msg)
     
 
@@ -226,7 +226,7 @@ async def set_clan(bot,ev:CQEvent):
     # 发送绑定过程中的查询结果
     clanrank_config = loadConfig()
     last_query_info = clanrank_config[str(group_id)]["lastQuery"]
-    msg = process(last_query_info,self_lan_query_list)
+    msg = process(last_query_info,self_clan_query_list)
     await bot.send(ev, msg, at_sender=False)  
 
 @sv_push.scheduled_job('cron',hour='5',minute='30')
