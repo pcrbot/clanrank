@@ -16,7 +16,7 @@ sv_query = Service("clanrank-query",enable_on_default=True,visible = True,help_=
 sv_push = Service("clanrank-push",enable_on_default=True,visible=True,help_='''
 以下仅限国服B站，渠道服/日台服均不可用
 如果不知道会长ID可以先通过通用查询来查询会长的ID
-【绑定公会ID】后跟会长ID来绑定公会, 公会战期间每日5:30会自动推送前一日排名
+【绑定公会】后跟会长ID来绑定公会, 公会战期间每日5:30会自动推送前一日排名
 【公会排名】查询本公会的排名
 '''.strip())
 
