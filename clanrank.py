@@ -48,34 +48,35 @@ def saveConfig(config):
     with open("./hoshino/modules/clanrank/clanrank.json","w",encoding='utf-8') as dump_f:
         json.dump(config,dump_f,indent=4,ensure_ascii=False)
  
-def get_rank(info,info_type):
+def get_rank(info, info_type, time=0):
     """
     母函数, 网络查询, 返回原始json信息
     可以查询的信息包括会长名字、公会名、名次、分数、榜单前十、会长ID
     仅限前2W名和分数线公会\n
+    time请保证为时间戳形式
     """
     url = url_first + info_type
     url += '/'
     
     if info_type == "name":
         url += '-1'
-        content = json.dumps({"history":"0","clanName": info})
+        content = json.dumps({"history":int(time),"clanName": info})
     elif info_type == "leader":
         url += '-1'
-        content = json.dumps({"history":"0","leaderName": info})
+        content = json.dumps({"history":int(time),"leaderName": info})
     elif info_type == "score":
         # 无需额外请求头
         url += info
-        content = json.dumps({"history":"0"})
+        content = json.dumps({"history":int(time)})
     elif info_type == "rank":
         url += info
-        content = json.dumps({"history":"0"})
+        content = json.dumps({"history":int(time)})
     elif info_type == "fav":
         info = [info] # 转化为表
-        content = json.dumps({"ids": info, "history": "0"})
+        content = json.dumps({"ids": info, "history": int(time)})
     elif info_type == "line":
         # info内容此时无效
-        content = json.dumps({"ids": info, "history": "0"})
+        content = json.dumps({"ids": info, "history": int(time)})
     else:
         # 这都能填错?爪巴!
         return -1
@@ -85,6 +86,7 @@ def get_rank(info,info_type):
         # timeout
         return 408
     r_dec = json.loads(r.text)
+    hoshino.logger.info(f'接受到查询结果{r.text}')
     return r_dec
 
 def process(dec, infoList:list):
@@ -191,7 +193,7 @@ async def clanrankQuery(bot, ev:CQEvent):
         await bot.send(ev, msg)
         code = set_clanname(int(group_id),config[str(group_id)]["leaderId"])
         if code != 0:
-            msg = f'发生错误{code}, 可能的原因：公会更换了会长/工会排名不在前2W名。\n如果非上述原因, 请联系维护并提供此信息。\n'
+            msg = f'发生错误{code}, 可能的原因：公会更换了会长/工会排名不在前2W名/传入的时间戳不正确。\n如果非上述原因, 请联系维护并提供此信息。\n'
             await bot.send(ev, msg)
             return
         else:
