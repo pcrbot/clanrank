@@ -1,26 +1,34 @@
-import requests,json,time,os
+
+import requests
+import json
+import time
+import os
 from hoshino import Service
 from hoshino.util import FreqLimiter
-import nonebot,hoshino
+import nonebot
+import hoshino
 from aiocqhttp.exceptions import Error as CQHttpError
-from . import boss
+from .boss import calc_hp
+from .msg_temp import *
 # 自行添加帮助菜单
-sv_query = Service("clanrank-query",enable_on_default=True,visible = False)
+sv_query = Service("clanrank-query", enable_on_default=True, visible=True)
 
-sv_push = Service("clanrank-push",enable_on_default=True,visible=True)
+sv_push = Service("clanrank-push", enable_on_default=True, visible=True)
 
 url_first = "https://service-kjcbcnmw-1254119946.gz.apigw.tencentcs.com/"
-headers = {"Custom-Source":"did","Content-Type": "application/json","Referer": "https://kengxxiao.github.io/Kyouka/"}
+headers = {"Custom-Source": "did", "Content-Type": "application/json",
+           "Referer": "https://kengxxiao.github.io/Kyouka/"}
 
 _time_limit = 120
 _lmt = FreqLimiter(_time_limit)
+
 
 def loadConfig():
     """
     返回json格式的config
     """
     if os.path.exists('./hoshino/modules/clanrank/clanrank.json'):
-        with open("./hoshino/modules/clanrank/clanrank.json","r",encoding='utf-8') as dump_f:
+        with open("./hoshino/modules/clanrank/clanrank.json", "r", encoding='utf-8') as dump_f:
             try:
                 # 读取错误一般是人工改动了config并且导致json格式错误
                 clanrank_config = json.load(dump_f)
@@ -30,14 +38,16 @@ def loadConfig():
         clanrank_config = {}
     return clanrank_config
 
+
 def saveConfig(config):
     """
     保存信息到clanrank.json
     """
-    with open("./hoshino/modules/clanrank/clanrank.json","w",encoding='utf-8') as dump_f:
-        json.dump(config,dump_f,indent=4,ensure_ascii=False)
- 
-def get_rank(info,info_type):
+    with open("./hoshino/modules/clanrank/clanrank.json", "w", encoding='utf-8') as dump_f:
+        json.dump(config, dump_f, indent=4, ensure_ascii=False)
+
+
+def get_rank(info, info_type, time=0):
     """
     母函数，网络查询，返回原始json信息
     可以查询的信息包括会长名字、公会名、名次、分数、榜单前十、会长ID
@@ -45,34 +55,49 @@ def get_rank(info,info_type):
     """
     url = url_first + info_type
     url += '/'
-    
+
     if info_type == "name":
         url += '-1'
-        content = json.dumps({"history":"0","clanName": info})
+        content = json.dumps({"history": int(time), "clanName": info})
     elif info_type == "leader":
         url += '-1'
-        content = json.dumps({"history":"0","leaderName": info})
+        content = json.dumps({"history": int(time), "leaderName": info})
     elif info_type == "score":
         # 无需额外请求头
         url += info
-        content = json.dumps({"history":"0"})
+        content = json.dumps({"history": int(time)})
     elif info_type == "rank":
         url += info
-        content = json.dumps({"history":"0"})
+        content = json.dumps({"history": int(time)})
     elif info_type == "fav":
-        info = [info] # 转化为表
-        content = json.dumps({"ids": info, "history": "0"})
+        info = [info]  # 转化为表
+        content = json.dumps({"ids": info, "history": int(time)})
     else:
         # 这都能填错?爪巴!
         return -1
-    r = requests.post(url, data=content, headers=headers)
+    try:
+        r = requests.post(url, data=content, headers=headers, timeout=5)
+    except:
+        # timeout
+        return 408
     r_dec = json.loads(r.text)
     return r_dec
 
-def process(dec,conciseMode = False):
+
+def process(dec, infoList: list):
     """
-    处理获得的json消息，转化为向Q群发送的消息
-    conciseMode=True, 简洁模式
+    处理获得的json消息, 转化为向Q群发送的消息\n
+    infoList:需要显示的信息的列表，可以为以下元素：\n
+    'clan_name':公会名称 \n
+    'rank':公会排名 \n
+    'damage':分数 \n
+    'boss': BOSS进度\n
+    'index':序号(多条信息时) \n
+    'leader_name': 会长名 \n
+    'member_num'：成员人数 \n
+    'ts':时间戳(无转换) \n
+    'leader_viewer_id':会长数字ID \n
+    'full'：所有匹配到的查询结果
     """
     # 异常处理
     if dec['code'] != 0:
@@ -83,38 +108,46 @@ def process(dec,conciseMode = False):
     if result == 0:
         msg = "没有查询结果,当前仅能查询前20000名公会,排名信息30分钟更新一次,相比于游戏内更新有10分钟左右延迟"
         return msg
-    msg = ">>>公会战排名查询\n"
-
-    # 此部分有问题，如果服务器时区不为东8区会出现错误时间转换
-    queryTime = time.localtime(dec['ts'])
-    formatTime = time.strftime('%Y-%m-%d %H:%M', queryTime)
-    msg += f'数据更新时间{formatTime}\n'
-
+    msg = ""
+    if 'full' in infoList:
+        if dec['full'] != 0:
+            msg += f"全部查询结果：{dec['full']}\n"
+        if dec['full'] >= 10:
+            msg += '查询结果较多，如果显示不全请前往网页查询\n'
+        infoList.remove('full')
+    if 'ts' in infoList:
+        queryTime = time.localtime(dec['ts'])
+        # 请预先调整机器时区为东8区，此处会使用系统默认时区
+        formatTime = time.strftime('%Y-%m-%d %H:%M', queryTime)
+        msg += f"更新时间{formatTime}\n"
+        infoList.remove('ts')
+    if 'index' in infoList:
+        # 预处理，将index移动到第一位
+        infoList.remove('index')
+        infoList.insert(0, 'index')
 
     for i in range(result):
-        clanname = dec['data'][i]['clan_name']
-        rank = dec['data'][i]['rank']
-        damage = dec['data'][i]['damage']
-        leader = dec['data'][i]['leader_name']
-        num = dec['data'][i]['member_num']
-        if conciseMode == True:
-            # 简洁模式
-            msg_new = f"第{i+1}条:\n公会名：{clanname}\n排名：{rank}\n"
-        else:
-            msg_new = f"第{i+1}条信息:\n公会名称：{clanname}\n会长：{leader}\n成员数量：{num}\n目前排名：{rank}\n造成伤害：{damage}"
-            msg_new += f'进度：{boss.calc_hp(damage)}'
-        msg += msg_new
+        for key in infoList:
+            if key == 'index':
+                msg += f'第{i+1}条信息：\n'
+            elif key == 'boss':
+                msg += f"{msg_dic[key]}："
+                damage = dec['data'][i]['damage']
+                msg += f"{calc_hp(damage)}\n"
+            else:
+                msg += f"{msg_dic[key]}："
+                msg += f"{dec['data'][i][key]}\n"
+        msg += '\n'
     return msg
 
-def set_clanname(group_id,leader_id):
+
+def set_clanname(group_id, leader_id):
     """
-    为一个群绑定公会信息，由于公会是以会长ID为唯一标志的，因此传入参数只有群号，会长ID，请确保公会是前2W名
+    为一个群绑定公会信息, 由于公会是以会长ID为唯一标志的, 因此传入参数只有群号, 会长ID, 请确保公会是前2W名
     """
-    try:
-        origin_info = get_rank(leader_id,"fav")
-    except:
-        # 网络错误
-        return 1
+    origin_info = get_rank(leader_id, "fav")
+    if type(origin_info) == int:
+        return origin_info
     if origin_info['code'] != 0:
         # Bad request
         return origin_info['code']
@@ -127,14 +160,16 @@ def set_clanname(group_id,leader_id):
     leaderId = leader_id
 
     clanrank_config = loadConfig()
-    clan_info = {"clanName":clanName,"leaderName":leaderName,"leaderId":leaderId,"lastQuery":origin_info}
+    clan_info = {"clanName": clanName, "leaderName": leaderName,
+                 "leaderId": leaderId, "lastQuery": origin_info}
     clanrank_config[str(group_id)] = clan_info
-    #print(clanrank_config)
+    # print(clanrank_config)
     saveConfig(clanrank_config)
     return 0
 
+
 @sv_push.on_rex(r'[工,公]会排名')
-async def clanrankQuery(bot, ctx , match):
+async def clanrankQuery(bot, ctx, match):
     """
     查询本公会排名，需要预先绑定公会。
     只能查询已经绑定的公会信息！
@@ -152,19 +187,19 @@ async def clanrankQuery(bot, ctx , match):
         # 上次查询时间戳有效时间42分钟,超时会触发联网查询
         msg = '缓存数据已超时，正在在线查询......'
         await bot.send(ctx, msg)
-        code = set_clanname(int(group_id),config[str(group_id)]["leaderId"])
+        code = set_clanname(int(group_id), config[str(group_id)]["leaderId"])
         if code != 0:
             msg = f'发生错误{code}，可能的原因：公会更换了会长/工会排名不在前2W名。\n如果非上述原因，请联系维护并提供此信息。'
             await bot.send(ctx, msg)
             return
         else:
-            config = loadConfig() # 信息已经被缓存，重新读取
+            config = loadConfig()  # 信息已经被缓存，重新读取
     last_query_info = config[str(group_id)]["lastQuery"]
-    msg = process(last_query_info)
+    msg = process(last_query_info, self_clan_query_list)
     await bot.send(ctx, msg)
-    
 
-@sv_push.on_rex(r'绑定[公,工]会\s*(.{1,20})$', normalize = False)
+
+@sv_push.on_rex(r'绑定[公,工]会\s*(.{1,20})$', normalize=False)
 async def set_clan(bot, ctx, match):
     """
     为一个公会绑定信息，需要会长ID
@@ -173,12 +208,12 @@ async def set_clan(bot, ctx, match):
     if not _lmt.check(uid):
         await bot.send(ctx, '您操作得太快了，请稍等一会儿。', at_sender=True)
         return
-    group_id = ctx['group_id'] # 不确定，可能有错
+    group_id = ctx['group_id']  # 不确定，可能有错
     leader_id = match.group(1)
     if not leader_id.isdigit():
         await bot.send(ctx, '请正确输入会长ID。', at_sender=True)
         return
-    code = set_clanname(int(group_id),int(leader_id))
+    code = set_clanname(int(group_id), int(leader_id))
     if code != 0:
         msg = f'发生错误{code}，可能的原因：网络错误/ID输入错误/工会排名不在前2W名。\n如果非上述原因，请联系维护并提供此信息。'
         await bot.send(ctx, msg, at_sender=True)
@@ -188,45 +223,43 @@ async def set_clan(bot, ctx, match):
     # 发送绑定过程中的查询结果
     clanrank_config = loadConfig()
     last_query_info = clanrank_config[str(group_id)]["lastQuery"]
-    msg = process(last_query_info)
-    await bot.send(ctx, msg, at_sender=False)  
+    msg = process(last_query_info, self_clan_query_list)
+    await bot.send(ctx, msg, at_sender=False)
 
-@sv_push.scheduled_job('cron',hour='5',minute='30')
+
+@sv_push.scheduled_job('cron', hour='5', minute='30')
 async def clanrank_push_cn():
     bot = nonebot.get_bot()
     config = loadConfig()
     for g_id in config:
         msg = ''
-        try:
-            origin_info = get_rank(config[g_id]["leaderId"],"fav")
-        except:
-            # 网络错误
-            msg += "查询本日5时公会战信息时发生网络错误"
+        origin_info = get_rank(config[g_id]["leaderId"], "fav")
+        if type(origin_info) == int:
+            msg += f"查询本日5时公会战信息时发生网络错误{origin_info},请联系维护"
         result = len(origin_info['data'])
         if origin_info['code'] != 0:
             # Bad request
             msg += f"查询本日5时公会战信息时发生错误{origin_info['code']}"
         elif result == 0:
-            # 没有信息
-            msg += "没有查询到本日5时的公会战排名信息，可能已掉出前2W名"
+            msg += "没有查询到本日5时的公会战排名信息, 可能已掉出前2W名"
         elif time.time() - origin_info['ts'] >= 45*60:
-            # 获得的数据是超过45分钟以前的，说明网站不再更新，公会战结束
+            # 获得的数据是超过45分钟以前的, 说明网站不再更新, 公会战结束
             return
         else:
             clanname = origin_info['data'][0]['clan_name']
             rank = origin_info['data'][0]['rank']
             msg += f'本日5时的公会战排名：\n公会名：{clanname}\n排名：{rank}'
         try:
-            await bot.send_group_msg(group_id=int(g_id), message = msg)
+            await bot.send_group_msg(group_id=int(g_id), message=msg)
             hoshino.logger.info(f'群{g_id} 推送排名成功')
         except CQHttpError as cqe:
             hoshino.logger.info(f'群{g_id} 推送排名错误：{type(cqe)}')
-        
+
 
 # -----------------------------------
 # 此部分以下为旧版直接查询的函数
 
-@sv_query.on_rex(r'查询[公,工]会\s*(.{1,20})$', normalize = False)
+@sv_query.on_rex(r'查询[公,工]会\s*(.{1,20})$', normalize=False)
 async def rank_query_by_name(bot, ctx, match):
     """
     通过公会名查询排名
@@ -235,15 +268,18 @@ async def rank_query_by_name(bot, ctx, match):
     if not _lmt.check(uid):
         await bot.send(ctx, '您查询得太快了，请稍等一会儿。', at_sender=True)
         return
-    _lmt.start_cd(uid)
     clan_name = match.group(1)
     info = get_rank(clan_name, "name")
-    msg = process(info)
-    msg += f"查询有{_time_limit}秒冷却。"
+    if type(info) == int:
+        msg = f'查询出现错误{info}，请联系维护者'
+    else:
+        msg = process(info, leader_id_query_list)
+        msg += f"查询有{_time_limit}秒冷却。"
+        _lmt.start_cd(uid)
     await bot.send(ctx, msg)
 
 
-@sv_query.on_rex(r'查询会长\s*(.{1,20})$', normalize = False)
+@sv_query.on_rex(r'查询会长\s*(.{1,20})$', normalize=False)
 async def rank_query_by_leader(bot, ctx, match):
     """
     通过会长名字查询排名
@@ -252,15 +288,18 @@ async def rank_query_by_leader(bot, ctx, match):
     if not _lmt.check(uid):
         await bot.send(ctx, '您查询得太快了，请稍等一会儿。', at_sender=True)
         return
-    _lmt.start_cd(uid)
     leader_name = match.group(1)
     info = get_rank(leader_name, "leader")
-    msg = process(info)
-    msg += f"查询有{_time_limit}秒冷却"
+    if type(info) == int:
+        msg = f'查询出现错误{info}，请联系维护者'
+    else:
+        msg = process(info, leader_id_query_list)
+        msg += f"查询有{_time_limit}秒冷却"
+        _lmt.start_cd(uid)
     await bot.send(ctx, msg)
 
 
-@sv_query.on_rex(r'查询排名\s*(.{1,20})$', normalize = False)
+@sv_query.on_rex(r'查询排名\s*(.{1,20})$', normalize=False)
 async def rank_query_by_rank(bot, ctx, match):
     """
     查看指定名次的公会信息
@@ -269,12 +308,34 @@ async def rank_query_by_rank(bot, ctx, match):
     if not _lmt.check(uid):
         await bot.send(ctx, '您查询得太快了，请稍等一会儿。', at_sender=True)
         return
-    _lmt.start_cd(uid)
     rank = match.group(1)
     if not rank.isdigit():
         await bot.send(ctx, '请正确输入数字。', at_sender=True)
         return
     info = get_rank(rank, "rank")
-    msg = process(info)
-    msg += f"查询有{_time_limit}秒冷却。"
+    if type(info) == int:
+        msg = f'查询出现错误{info}，请联系维护者'
+    else:
+        msg = process(info, leader_id_query_list)
+        msg += f"查询有{_time_limit}秒冷却。"
+        _lmt.start_cd(uid)
+    await bot.send(ctx, msg)
+
+
+@sv_query.on_rex('分数线', normalize=False)
+async def damage_line(bot, ctx, match):
+    """
+    通过line接口来查询分数线，共14条信息
+    """
+    uid = ctx['user_id']
+    if not _lmt.check(uid):
+        await bot.send(ctx, '您查询得太快了, 请稍等一会儿', at_sender=True)
+        return
+    info = get_rank("nothing", "line")
+    if type(info) == int:
+        msg = f'查询出现错误{info}，请联系维护者'
+    else:
+        msg = process(info, line_list)
+        msg += f"查询有{_time_limit}秒冷却"
+        _lmt.start_cd(uid)
     await bot.send(ctx, msg)
