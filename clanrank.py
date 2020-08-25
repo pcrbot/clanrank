@@ -1,4 +1,4 @@
-
+# 来自群友stranger的修改
 import requests
 import json
 import time
@@ -16,7 +16,7 @@ sv_query = Service("clanrank-query", enable_on_default=True, visible=True)
 sv_push = Service("clanrank-push", enable_on_default=True, visible=True)
 
 url_first = "https://service-kjcbcnmw-1254119946.gz.apigw.tencentcs.com/"
-headers = {"Custom-Source": "did", "Content-Type": "application/json",
+headers = {"Custom-Source": "GitHub@var-mixer", "Content-Type": "application/json",
            "Referer": "https://kengxxiao.github.io/Kyouka/"}
 
 _time_limit = 120
