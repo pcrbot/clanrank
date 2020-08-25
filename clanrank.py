@@ -104,6 +104,7 @@ def process(dec, infoList:list):
     'leader_viewer_id':会长数字ID \n
     'full'：所有匹配到的查询结果
     """
+    infoList = infoList.copy() # 避免影响后续查询, 感谢sjj118, 参见#4
     # 异常处理
     if dec['code'] != 0:
         # Bad request
