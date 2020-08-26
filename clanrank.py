@@ -211,7 +211,7 @@ async def set_clan(bot,ev:CQEvent):
     """
     uid = ev.user_id
     if not _lmt.check(uid):
-        await bot.send(ev, '您操作得太快了, 请稍等一会儿', at_sender=True)
+        await bot.send(ev, f'您操作得太快了, 请稍等一会儿(冷却时间剩余{int(_lmt.left_time(uid)) + 1}秒)', at_sender=True)
         return
     _lmt.start_cd(uid)
     group_id = ev.group_id
@@ -271,7 +271,7 @@ async def rank_query_by_name(bot, ev: CQEvent):
     """
     uid = ev.user_id
     if not _lmt.check(uid):
-        await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
+        await bot.send(ev, f'您查询得太快了, 请稍等一会儿(冷却时间剩余{int(_lmt.left_time(uid)) + 1}秒)', at_sender=True)
         return
     clan_name = ev.message.extract_plain_text()
     info = get_rank(clan_name, "name")
@@ -291,7 +291,7 @@ async def rank_query_by_leader(bot, ev: CQEvent):
     """
     uid = ev.user_id
     if not _lmt.check(uid):
-        await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
+        await bot.send(ev, f'您查询得太快了, 请稍等一会儿(冷却时间剩余{int(_lmt.left_time(uid)) + 1}秒)', at_sender=True)
         return
     leader_name = ev.message.extract_plain_text()
     info = get_rank(leader_name, "leader")
@@ -311,7 +311,7 @@ async def rank_query_by_rank(bot, ev: CQEvent):
     """
     uid = ev.user_id
     if not _lmt.check(uid):
-        await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
+        await bot.send(ev, f'您查询得太快了, 请稍等一会儿(冷却时间剩余{int(_lmt.left_time(uid)) + 1}秒)', at_sender=True)
         return
     rank = ev.message.extract_plain_text()
     if not rank.isdigit():
@@ -333,7 +333,7 @@ async def damage_line(bot, ev: CQEvent):
     """
     uid = ev.user_id
     if not _lmt.check(uid):
-        await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
+        await bot.send(ev, f'您查询得太快了, 请稍等一会儿(冷却时间剩余{int(_lmt.left_time(uid)) + 1}秒)', at_sender=True)
         return
     info = get_rank("nothing", "line")
     if type(info) == int:
