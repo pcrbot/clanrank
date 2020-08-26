@@ -72,6 +72,9 @@ def get_rank(info, info_type, time=0):
     elif info_type == "fav":
         info = [info]  # 转化为表
         content = json.dumps({"ids": info, "history": int(time)})
+    elif info_type == "line":
+        # info内容此时无效
+        content = json.dumps({"ids": info, "history": int(time)})
     else:
         # 这都能填错?爪巴!
         return -1
