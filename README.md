@@ -1,7 +1,7 @@
 # clanrank
  适用于HoshinoBot v2的插件, 可以在群聊中查询公会战排名（仅B服）. 
 
-数据均来自Github@Kengxxiao
+数据均来自[Github@Kengxxiao](https://github.com/Kengxxiao)
 
 项目地址 https://github.com/Kengxxiao/Kyouka
 
@@ -14,7 +14,7 @@
 如果发生400/441错误, 可能是更新了POST请求头, 请更新或等待更新. 出现404错误则是公会不在列表中, 可能的原因:
 1. 会长在农场, 或会长已换人
 2. 公会已解散
-3. 公会排名不在前2W名
+3. 公会排名不在前25000名
 4. 不是B服公会
 
 现已更新缓存机制, ~~v0.1.5版本由于源站时间戳变更暂时失效, 请适度查询~~ 已修复

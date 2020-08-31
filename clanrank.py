@@ -52,7 +52,7 @@ def get_rank(info, info_type, time=0):
     """
     母函数, 网络查询, 返回原始json信息
     可以查询的信息包括会长名字、公会名、名次、分数、榜单前十、会长ID
-    仅限前2W名和分数线公会\n
+    仅限前25000名和分数线公会\n
     time请保证为时间戳形式
     """
     url = url_first + info_type
@@ -112,7 +112,7 @@ def process(dec, infoList:list):
         return msg
     result = len(dec['data'])
     if result == 0:
-        msg = "没有查询结果,仅能查询前20000名公会,排名信息30分钟更新一次,相比于游戏内更新有10分钟左右延迟\n"
+        msg = "没有查询结果,仅能查询前20000名公会,排名信息30分钟更新一次,相比于游戏内更新有12分钟左右延迟\n"
         return msg
 
     # 预处理列表信息中的部分
@@ -150,7 +150,7 @@ def process(dec, infoList:list):
 
 def set_clanname(group_id,leader_id):
     """
-    为一个群绑定公会信息, 由于公会是以会长ID为唯一标志的, 因此传入参数只有群号, 会长ID, 请确保公会是前2W名
+    为一个群绑定公会信息, 由于公会是以会长ID为唯一标志的, 因此传入参数只有群号, 会长ID, 请确保公会是前25000名
     """
     origin_info = get_rank(leader_id,"fav")
     if type(origin_info) == int:
@@ -194,7 +194,7 @@ async def clanrankQuery(bot, ev:CQEvent):
         await bot.send(ev, msg)
         code = set_clanname(int(group_id),config[str(group_id)]["leaderId"])
         if code != 0:
-            msg = f'发生错误{code}, 可能的原因：公会更换了会长/工会排名不在前2W名/传入的时间戳不正确。\n如果非上述原因, 请联系维护并提供此信息。\n'
+            msg = f'发生错误{code}, 可能的原因：公会更换了会长/工会排名不在前25000名/传入的时间戳不正确。\n如果非上述原因, 请联系维护并提供此信息。\n'
             await bot.send(ev, msg)
             return
         else:
@@ -221,7 +221,7 @@ async def set_clan(bot,ev:CQEvent):
         return
     code = set_clanname(int(group_id),int(leader_id))
     if code != 0:
-        msg = f'发生错误{code}, 可能的原因：网络错误/ID输入错误/工会排名不在前2W名。\n如果非上述原因, 请联系维护并提供此信息。'
+        msg = f'发生错误{code}, 可能的原因：网络错误/ID输入错误/工会排名不在前25000名。\n如果非上述原因, 请联系维护并提供此信息。'
         await bot.send(ev, msg, at_sender=True)
         return
     msg = f"绑定成功\n"
@@ -245,11 +245,11 @@ async def clanrank_push_cn():
         if origin_info['code'] != 0:
             # Bad request
             msg += f"查询本日5时公会战信息时发生错误{origin_info['code']}"
-        elif result == 0:
-            msg += "没有查询到本日5时的公会战排名信息, 可能已掉出前2W名"
         elif time.time() - origin_info['ts'] >= 45*60:
             # 获得的数据是超过45分钟以前的, 说明网站不再更新, 公会战结束
             return
+        elif result == 0:
+            msg += "没有查询到本日5时的公会战排名信息, 可能已掉出前25000名"
         else:
             clanname = origin_info['data'][0]['clan_name']
             rank = origin_info['data'][0]['rank']
