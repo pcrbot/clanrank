@@ -90,8 +90,6 @@ def get_rank(info, info_type, time=0):
     url = url_first + info_type
     url += '/'
     # 用🔨的正则，那是人用的？
-    if '[CQ:' in info and ']' in info and '=' in info:
-        return {"code":114514}
     if info_type == "name":
         url += '-1'
         content = json.dumps({"history":int(time),"clanName": info})
@@ -120,7 +118,7 @@ def get_rank(info, info_type, time=0):
         # timeout
         return 408
     r_dec = json.loads(r.text)
-    hoshino.logger.info(f'接受到查询结果{r.text}')
+    hoshino.logger.info(f'接收到查询结果{r.text}')
     return r_dec
 
 
@@ -312,15 +310,15 @@ async def rank_query_by_name(bot, ev: CQEvent):
         await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
         return
     clan_name = ev.message.extract_plain_text()
+    if '[CQ:' in clan_name and ']' in clan_name and '=' in clan_name:
+            await bot.send(ev, "发现尝试注入行为, 您将被拉黑24小时")
+            set_block_user(uid, timedelta(hours=24))
+            await notify_master(f'群{ev.group_id}内的{uid}尝试向clanrank注入。')
+            return
     info = get_rank(clan_name, "name")
     if type(info) == int:
         msg = f'查询出现错误{info}，请联系维护者'
     else:
-        if info["code"] == 114514:
-            await bot.send(ev, "发现尝试注入行为, 您将被拉黑24小时.")
-            set_block_user(uid, timedelta(hours=24))
-            await notify_master(f'群{ev.group_id}内的{uid}尝试向clanrank注入。')
-            return
         msg = process(info,leader_id_query_list)
         msg += f"查询有{_time_limit}秒冷却"
         _lmt.start_cd(uid)
@@ -337,15 +335,15 @@ async def rank_query_by_leader(bot, ev: CQEvent):
         await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
         return
     leader_name = ev.message.extract_plain_text()
-    info = get_rank(leader_name, "leader")
-    if type(info) == int:
-        msg = f'查询出现错误{info}，请联系维护者'
-    else:
-        if info["code"] == 114514:
+    if '[CQ:' in leader_name and ']' in leader_name and '=' in leader_name:
             await bot.send(ev, "发现尝试注入行为, 您将被拉黑24小时")
             set_block_user(uid, timedelta(hours=24))
             await notify_master(f'群{ev.group_id}内的{uid}尝试向clanrank注入。')
             return
+    info = get_rank(leader_name, "leader")
+    if type(info) == int:
+        msg = f'查询出现错误{info}，请联系维护者'
+    else:
         msg = process(info,leader_id_query_list)
         msg += f"查询有{_time_limit}秒冷却"
         _lmt.start_cd(uid)
