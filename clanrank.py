@@ -1,16 +1,26 @@
-import requests,json,time,os
-from hoshino import Service, get_bot
+import json
+import os
+import re
+import time
 from datetime import timedelta
-from hoshino.util import FreqLimiter
-import nonebot,hoshino
-from hoshino.typing import CQEvent
+
+import hoshino
+import nonebot
+import requests
 from aiocqhttp.exceptions import Error as CQHttpError
+from hoshino import Service
+from hoshino.config import SUPERUSERS
+from hoshino.typing import CQEvent
+from hoshino.util import FreqLimiter
+
 from .boss import calc_hp
 from .msg_temp import *
-from hoshino.config import SUPERUSERS
-#from hoshino.config import CONFIG_PATH
-CONFIG_PATH = '~/.hoshino/'
-from hoshino.priv import set_block_user, set_block_group
+
+try:
+    from hoshino.config import CONFIG_PATH
+except ImportError:
+    CONFIG_PATH = '~/.hoshino/'
+from hoshino.priv import set_block_user
 
 _help1 = '''
 [查询公会XXX]查询公会名包含XXX的公会
@@ -41,7 +51,7 @@ _dir = os.path.expanduser(CONFIG_PATH + 'clanrank')
 if not os.path.exists(_dir):
     os.makedirs(_dir)
 
-
+inject_regex = re.compile(r'\[CQ:(.*),(.*)\]')
 
 
 async def notify_master(txt) -> bool:
@@ -310,7 +320,7 @@ async def rank_query_by_name(bot, ev: CQEvent):
         await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
         return
     clan_name = ev.message.extract_plain_text()
-    if '[CQ:' in clan_name and ']' in clan_name and '=' in clan_name:
+    if inject_regex.match(clan_name):
             await bot.send(ev, "发现尝试注入行为, 您将被拉黑24小时")
             set_block_user(uid, timedelta(hours=24))
             await notify_master(f'群{ev.group_id}内的{uid}尝试向clanrank注入。')
@@ -335,7 +345,7 @@ async def rank_query_by_leader(bot, ev: CQEvent):
         await bot.send(ev, '您查询得太快了, 请稍等一会儿', at_sender=True)
         return
     leader_name = ev.message.extract_plain_text()
-    if '[CQ:' in leader_name and ']' in leader_name and '=' in leader_name:
+    if inject_regex.match(leader_name):
             await bot.send(ev, "发现尝试注入行为, 您将被拉黑24小时")
             set_block_user(uid, timedelta(hours=24))
             await notify_master(f'群{ev.group_id}内的{uid}尝试向clanrank注入。')
