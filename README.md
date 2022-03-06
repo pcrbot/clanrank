@@ -1,5 +1,8 @@
+# 由于镜华工具箱改版，不再支持使用，请有能力者自建刷新源或者前往https://kengxxiao.github.io/Kyouka/在线查询
+
+
 # clanrank
- 适用于HoshinoBot v2的插件, 可以在群聊中查询公会战排名（仅B服）. 
+适用于HoshinoBot v2的插件, 可以在群聊中查询公会战排名（仅B服）. 
 
 数据均来自[Github@Kengxxiao](https://github.com/Kengxxiao)
 
