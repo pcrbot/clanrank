@@ -1,4 +1,11 @@
-# 由于镜华工具箱改版，不再支持使用，请有能力者自建刷新源或者前往https://kengxxiao.github.io/Kyouka/在线查询
+# 不可用
+由于[镜华工具箱](https://kyouka.kengxxiao.com/main)改版且接口加签，理解为作者不再支持使用，因此暂不适配。请有能力者自建源使用或者前往[镜华工具箱](https://kyouka.kengxxiao.com/main)进行在线查询。
+
+# 原README
+<details>
+<summary>点击展开</summary>
+<br>
+
 
 
 # clanrank
@@ -137,3 +144,4 @@
 更新时间:2020/6/30 2:19
 * 初版发布, 支持四种查询模式
 
+</details>
